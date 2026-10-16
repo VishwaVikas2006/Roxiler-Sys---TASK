@@ -1,0 +1,136 @@
+### StoreRate API — request collection (VS Code "REST Client" / JetBrains HTTP client)
+@baseUrl = http://localhost:4000/api
+@adminToken = PASTE_TOKEN_FROM_LOGIN
+@userToken = PASTE_TOKEN_FROM_LOGIN
+@ownerToken = PASTE_TOKEN_FROM_LOGIN
+# Tip: every protected request also accepts `X-Auth-Token: {{token}}` instead of the Authorization header.
+
+### Health
+GET {{baseUrl}}/health
+
+### Login as admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@storerate.com", "password": "Admin@1234" }
+
+### Login as normal user
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "user1@storerate.com", "password": "User@12345" }
+
+### Login as store owner
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "owner1@storerate.com", "password": "Owner@1234" }
+
+### Register a normal user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Brand New Platform Member Account",
+  "email": "newmember@example.com",
+  "address": "Kukatpally, Hyderabad",
+  "password": "Member@123"
+}
+
+### Current profile
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{userToken}}
+
+### Change password
+PATCH {{baseUrl}}/auth/password
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "currentPassword": "User@12345", "newPassword": "Fresh@1234" }
+
+### ─── Admin ───────────────────────────────────────────────────────────────
+
+### Dashboard totals
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{adminToken}}
+
+### Users — filter + sort + paginate
+GET {{baseUrl}}/admin/users?address=kukatpally&role=user&sortBy=name&order=desc&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### Store owners without a store (for the Add Store picker)
+GET {{baseUrl}}/admin/users?unassignedOwners=true
+Authorization: Bearer {{adminToken}}
+
+### User details (store owners include their store + rating)
+GET {{baseUrl}}/admin/users/2
+Authorization: Bearer {{adminToken}}
+
+### Create a user (role: admin | user | store_owner)
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Second Administrator Account",
+  "email": "admin2@storerate.com",
+  "password": "Admin@1234",
+  "address": "StoreRate HQ, Hyderabad",
+  "role": "admin"
+}
+
+### Stores — sorted by rating
+GET {{baseUrl}}/admin/stores?sortBy=rating&order=desc
+Authorization: Bearer {{adminToken}}
+
+### Create a store for an existing owner (owner6 has no store in the seed)
+POST {{baseUrl}}/admin/stores
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Kondapur Daily Needs Provision Store",
+  "email": "hello@kondapurdaily.com",
+  "address": "Kondapur Main Road, Hyderabad 500084",
+  "ownerId": 7
+}
+
+### Create a store together with a new owner account
+POST {{baseUrl}}/admin/stores
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Miyapur Home Appliances Showroom",
+  "email": "sales@miyapurappliances.com",
+  "address": "Miyapur X Roads, Hyderabad 500049",
+  "owner": {
+    "name": "Venkata Ramana Murthy Owner",
+    "email": "owner7@storerate.com",
+    "password": "Owner@1234",
+    "address": "Miyapur, Hyderabad"
+  }
+}
+
+### ─── Normal user ─────────────────────────────────────────────────────────
+
+### Browse stores (search name OR address)
+GET {{baseUrl}}/stores?q=hitech&sortBy=rating&order=desc
+Authorization: Bearer {{userToken}}
+
+### Submit / modify my rating for store 2 (201 first time, 200 afterwards)
+PUT {{baseUrl}}/stores/2/rating
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "rating": 5 }
+
+### ─── Store owner ─────────────────────────────────────────────────────────
+
+### My store + average rating
+GET {{baseUrl}}/owner/dashboard
+Authorization: Bearer {{ownerToken}}
+
+### Users who rated my store
+GET {{baseUrl}}/owner/ratings?sortBy=rating&order=desc
+Authorization: Bearer {{ownerToken}}

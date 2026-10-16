@@ -1,0 +1,23 @@
+# PostgreSQL for local development. Start with: docker compose up -d
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: storerate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: storerate
+      POSTGRES_PASSWORD: storerate
+      POSTGRES_DB: storerate
+    ports:
+      - '5432:5432'
+    volumes:
+      - storerate-pgdata:/var/lib/postgresql/data
+      - ./docs/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U storerate -d storerate']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  storerate-pgdata:
